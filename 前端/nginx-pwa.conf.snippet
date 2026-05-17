@@ -1,0 +1,35 @@
+# 把下面这段加到 1Panel 网站设置 → 反向代理对应的 server 块里，
+# 或者放到 /www/sites/miaotxxx.site/proxy/ 目录下作为单独 .conf 被 include。
+#
+# 作用：
+#   - /sw.js          强制 no-cache，让 Cloudflare/浏览器永远去拉最新的
+#   - /manifest.json  正确的 application/manifest+json MIME，缓存 1 天
+#   - /offline.html   缓存 1 天
+#   - 图标 PNG        缓存 1 天
+# 这些都比"反向代理到 :8088"的 location ^~ /api/ 优先级低，不会冲突。
+
+location = /sw.js {
+    default_type application/javascript;
+    add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+    add_header Pragma "no-cache" always;
+    add_header Service-Worker-Allowed "/" always;
+    expires 0;
+    try_files $uri =404;
+}
+
+location = /manifest.json {
+    default_type application/manifest+json;
+    add_header Cache-Control "public, max-age=86400" always;
+    try_files $uri =404;
+}
+
+location = /offline.html {
+    default_type "text/html; charset=utf-8";
+    add_header Cache-Control "public, max-age=86400" always;
+    try_files $uri =404;
+}
+
+location ~* ^/(favicon-(192|512)(-maskable)?|apple-touch-icon-180)\.png$ {
+    add_header Cache-Control "public, max-age=86400" always;
+    try_files $uri =404;
+}

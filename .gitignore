@@ -1,0 +1,44 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+*.egg
+.venv/
+venv/
+
+# --- Environment ---
+后端/.env
+!.env.example
+
+# --- Database ---
+*.db
+*.db-shm
+*.db-wal
+*.bak
+后端/data/images/*
+
+# --- IDE / Editor ---
+.vscode/
+.kiro/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Archives ---
+*.zip
+*.tar.gz
+*.rar
+
+# --- Uploads (keep .gitkeep) ---
+后端/uploads/*
+!后端/uploads/.gitkeep
+
+# --- Shell scripts (built artifacts only) ---
+# scripts/ is fine to track

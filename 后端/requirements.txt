@@ -1,0 +1,26 @@
+fastapi>=0.115.0
+uvicorn[standard]
+sqlalchemy[asyncio]>=2.0.0
+aiosqlite
+aiomysql
+alembic
+pydantic-settings
+pydantic[email]
+email-validator>=2.0.0
+python-jose[cryptography]
+bcrypt>=4.0.0
+httpx
+python-multipart
+
+# ===== ChatGPT 账号池 / 生图（chatgpt2api 移植所需） =====
+curl-cffi>=0.15.0
+pybase64>=1.4.3
+tiktoken>=0.12.0
+pillow>=10.0
+beautifulsoup4>=4.12
+python-dateutil>=2.9
+tenacity>=8.4
+
+# ===== 注册机（Playwright + IMAP） =====
+# 安装后还需运行: playwright install chromium
+playwright>=1.45

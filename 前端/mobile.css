@@ -1,0 +1,475 @@
+/* ============================================================================
+ * mobile.css — Txxx 公益站移动端样式补丁
+ *
+ * 加载方式：在 index.html 的 <head> 内通过 <link rel="stylesheet" href="/mobile.css?v=...">
+ * 引入。所有非 :root 变量声明的规则均嵌入 @media (max-width: 768px) 内，
+ * 桌面端零回归。
+ *
+ * 模块：
+ *   M0 :root 变量（不嵌套）
+ *   M1 全站基础（标签默认样式、滚动、tap-highlight）
+ *   M2 公共布局（首页、登录、注册、关于、画廊、图片管理、个人资料、收件箱、反馈）
+ *   M3 顶部导航折叠 / Header 区
+ *   M4 生图页全屏布局
+ *   M5 抽屉控件 .mux-drawer / .mux-overlay / .mux-fab
+ *   M6 管理后台阻断遮罩 .mux-block
+ *   M7 SW 更新提示 toast .mux-toast
+ *   M8 Tap_Target 与触屏优化
+ *   M9 安全区（safe-area-inset）
+ *   MA 暗黑模式 (.dark / [data-theme="dark"])
+ *   MB 减少动效（prefers-reduced-motion）
+ * ========================================================================= */
+
+/* ---------- M0 全站变量（root 不需要走媒体查询） ---------- */
+:root {
+  --mux-bp: 768px;
+  --mux-tap: 44px;
+  --mux-drawer-w: min(85vw, 320px);
+  --mux-z-overlay: 9000;
+  --mux-z-drawer: 9100;
+  --mux-z-toast: 9300;
+  --mux-z-block: 9500;
+  --mux-brand: #863bff;
+}
+
+/* 抽屉打开时锁滚（任意视口都生效，因为这个类只会在 mobile.js 在 mobile 视口下添加） */
+body.mux-drawer-open {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+/* ---------- 仅窄屏生效 ---------- */
+@media (max-width: 768px) {
+
+  /* M1 全站基础 */
+  html, body {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  body {
+    /* 防止页面被横向撑出滚动条 */
+    max-width: 100vw;
+  }
+  /* 给所有可点击元素加底层 tap-highlight 抑制 */
+  a, button, [role="button"], .el-button, .el-tag,
+  .el-checkbox, .el-radio, .privacy-chip, .mux-fab,
+  .mux-block__btn, .mux-toast__btn {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* 输入框 ≥16px 防 iOS 自动放大 */
+  input, select, textarea, .el-input__inner, .el-textarea__inner {
+    font-size: 16px !important;
+  }
+  /* 平滑滚动 */
+  .el-main, .el-scrollbar__view, .turns-scroll, .conv-sidebar,
+  .gallery-grid, .image-manager-grid, .mux-drawer__body {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* M2 公共布局：让多列网格在窄屏上变 1~2 列；让所有页面级容器不溢出 */
+  .el-main { padding-inline: 12px !important; }
+
+  /* 公开页根容器：常见 Vue Router 容器命名 */
+  .public-layout, .home-page, .about-page, .auth-page,
+  .feedback-page, .inbox-page, .profile-page,
+  .gallery-page, .image-manager, .prompt-gallery {
+    padding-inline: max(12px, env(safe-area-inset-left))
+                    max(12px, env(safe-area-inset-right));
+    box-sizing: border-box;
+    max-width: 100vw;
+  }
+
+  /* 卡片 / 网格类容器：降列 */
+  .home-card-list, .feature-grid, .gallery-grid, .gallery,
+  .image-manager-grid, .image-grid, .prompt-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  /* 极窄屏（≤480）单列 */
+  @media (max-width: 480px) {
+    .home-card-list, .feature-grid, .gallery-grid, .gallery,
+    .image-manager-grid, .image-grid, .prompt-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Element Plus 的 row/col：在 mobile 让 col 自动换行单列 */
+  .el-row, .el-row--flex { flex-wrap: wrap; }
+  .el-col, [class*="el-col-"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+  /* 个人资料、反馈页等表单宽度 */
+  .el-form { max-width: 100%; }
+  .el-form .el-form-item__label { width: auto !important; }
+  .el-form .el-form-item__content { margin-left: 0 !important; }
+
+  /* 卡片内边距收紧 */
+  .el-card__body { padding: 12px !important; }
+  .el-card { border-radius: 14px; }
+
+  /* 表格样式（管理员后台之外的列表）退化为可横滚 */
+  .el-table__inner-wrapper { overflow-x: auto; }
+
+  /* 按钮组、操作栏垂直排列 */
+  .toolbar, .action-bar, .form-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* M3 顶部 Header / 导航 */
+  .public-layout .el-header,
+  .app-header {
+    padding-inline: 12px !important;
+    padding-top: max(8px, env(safe-area-inset-top)) !important;
+    height: auto !important;
+    min-height: 56px;
+  }
+  /* 顶部水平菜单：让超长项水平滚动 */
+  .public-layout .el-menu--horizontal,
+  .app-header .menu-list {
+    flex: 1 1 auto !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap !important;
+    border-bottom: 0 !important;
+  }
+  .public-layout .el-menu--horizontal::-webkit-scrollbar,
+  .app-header .menu-list::-webkit-scrollbar { display: none; }
+  .public-layout .el-menu--horizontal > .el-menu-item,
+  .app-header .menu-list > * {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* 站点标题（左上角）让位 */
+  .site-title, .public-layout .site-title { font-size: 16px; }
+
+  /* 登录/注册卡片：占满窄屏宽度，保持卡片感 */
+  .auth-page .auth-card { width: 100% !important; max-width: 420px; }
+  .auth-page { padding: 16px !important; min-height: 100dvh; }
+
+  /* 注册页验证码倒计时按钮：保持横向布局，按钮可见可点 */
+  .auth-page .code-row { display: flex; gap: 8px; }
+  .auth-page .code-row .code-input { flex: 1 1 auto; min-width: 0; }
+  .auth-page .code-row .code-btn { flex: 0 0 auto; min-width: 96px; }
+
+  /* GitHub 登录按钮 */
+  .oauth-buttons .el-button { width: 100%; }
+
+  /* M4 生图页全屏 */
+  .workspace-layout, .gen-layout {
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  /* 默认隐藏左侧二级导航（图标 + 文字的 sidebar），让生图主体全宽 */
+  .workspace-layout .ws-sidebar,
+  .workspace-layout .side-nav {
+    display: none;
+  }
+
+  /* 生图主区域 */
+  .gen-main, .turns-scroll {
+    width: 100% !important;
+    padding-inline: 8px !important;
+    padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important;
+  }
+
+  /* 第几轮 / 已完成等信息条 */
+  .gen-meta, .turn-meta { font-size: 12px; }
+
+  /* 生图主区域中间画布 */
+  .turn-canvas, .image-frame { max-width: 100% !important; }
+  .turn-canvas img { max-width: 100%; height: auto; }
+
+  /* 底部浮动输入框 */
+  .floating-input-wrap {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+  .floating-input {
+    border-radius: 16px !important;
+    padding: 10px 12px !important;
+  }
+  .input-textarea, .floating-input textarea {
+    min-height: 40px;
+    line-height: 1.5;
+  }
+  /* 工具栏：行内排列，溢出可横滚 */
+  .input-toolbar {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .input-toolbar::-webkit-scrollbar { display: none; }
+  .input-toolbar .tool-info,
+  .input-toolbar .tool-segment { flex-shrink: 0; }
+  .input-toolbar .tool-info { font-size: 11px; }
+  .input-toolbar .privacy-chip { font-size: 12px; }
+
+  /* M5 抽屉、遮罩、悬浮按钮 */
+  .mux-fab {
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top));
+    left: max(10px, env(safe-area-inset-left));
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,.14);
+    border: 1px solid rgba(0,0,0,.06);
+    color: #303133;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 8800;
+    transition: transform .15s ease;
+  }
+  .mux-fab:active { transform: scale(.96); }
+  .mux-fab svg { width: 22px; height: 22px; pointer-events: none; }
+  .mux-fab__badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    min-width: 16px; height: 16px;
+    border-radius: 999px;
+    background: var(--mux-brand);
+    color: #fff;
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+    padding: 0 4px;
+    box-sizing: border-box;
+  }
+  /* 抽屉外的半透明遮罩 */
+  .mux-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,18,24,.42);
+    z-index: var(--mux-z-overlay);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  .mux-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* 抽屉本体 */
+  .mux-drawer {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--mux-drawer-w);
+    height: 100dvh;
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(0,0,0,.18);
+    transform: translateX(-105%);
+    transition: transform .22s ease;
+    z-index: var(--mux-z-drawer);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mux-drawer.is-open { transform: translateX(0); }
+  .mux-drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 8px;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .mux-drawer__head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .mux-drawer__close {
+    appearance: none; -webkit-appearance: none;
+    border: 0; background: transparent; cursor: pointer;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #909399;
+  }
+  .mux-drawer__close:active { background: #f5f7fa; }
+  .mux-drawer__body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  /* 把原 .conv-sidebar 移入抽屉后，让它撑满抽屉 */
+  .mux-drawer .conv-sidebar {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .mux-drawer .conv-sidebar > *:first-child {
+    padding-top: 8px;
+  }
+
+  /* M6 阻断遮罩（管理后台移动端） */
+  .mux-block {
+    position: fixed;
+    inset: 0;
+    z-index: var(--mux-z-block);
+    background: rgba(15,18,24,.92);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    padding-top: max(24px, env(safe-area-inset-top));
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+    -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+  }
+  .mux-block__panel {
+    background: #fff;
+    color: #303133;
+    border-radius: 18px;
+    max-width: 360px;
+    width: 100%;
+    padding: 28px 22px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,.3);
+  }
+  .mux-block__panel h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .mux-block__panel p {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #606266;
+    line-height: 1.6;
+  }
+  .mux-block__btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mux-block__btn {
+    appearance: none; -webkit-appearance: none;
+    border: 0;
+    cursor: pointer;
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    background: var(--mux-brand);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(134,59,255,.28);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mux-block__btn--ghost {
+    background: transparent;
+    color: #909399;
+    box-shadow: none;
+    font-size: 12px;
+    text-decoration: underline;
+  }
+
+  /* M7 SW 更新 toast */
+  .mux-toast {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: var(--mux-z-toast);
+    background: #303133;
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    font-size: 13px;
+    transform: translateY(120%);
+    transition: transform .25s ease;
+  }
+  .mux-toast.is-show { transform: translateY(0); }
+  .mux-toast__btn {
+    appearance: none; -webkit-appearance: none;
+    border: 0;
+    cursor: pointer;
+    background: var(--mux-brand);
+    color: #fff;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13px;
+  }
+  .mux-toast__close {
+    appearance: none; -webkit-appearance: none;
+    border: 0;
+    background: transparent;
+    color: #c0c4cc;
+    cursor: pointer;
+    padding: 6px;
+  }
+
+  /* M8 Tap_Target 提升 */
+  .el-button { min-height: 38px; }
+  .el-button--small, .el-button--mini { min-height: 36px; }
+  .el-tag { min-height: 26px; }
+  .el-pagination .btn-prev,
+  .el-pagination .btn-next,
+  .el-pagination .number {
+    min-width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+  }
+
+  /* M9 安全区已经穿插在各模块里 */
+
+  /* MA 暗黑模式（如果前端有 dark 类名） */
+  html.dark .mux-fab,
+  html[data-theme="dark"] .mux-fab,
+  body.dark .mux-fab {
+    background: #2a2f3a;
+    color: #f5f7fa;
+    border-color: rgba(255,255,255,.06);
+  }
+  html.dark .mux-drawer,
+  html[data-theme="dark"] .mux-drawer,
+  body.dark .mux-drawer {
+    background: #1f2330;
+    color: #e6e8eb;
+  }
+  html.dark .mux-drawer__head,
+  html[data-theme="dark"] .mux-drawer__head,
+  body.dark .mux-drawer__head {
+    border-bottom-color: rgba(255,255,255,.08);
+  }
+  html.dark .mux-block__panel,
+  html[data-theme="dark"] .mux-block__panel,
+  body.dark .mux-block__panel {
+    background: #1f2330;
+    color: #e6e8eb;
+  }
+  html.dark .mux-block__panel p,
+  html[data-theme="dark"] .mux-block__panel p,
+  body.dark .mux-block__panel p {
+    color: #aab1bd;
+  }
+}
+
+/* MB 减少动效（不依赖断点） */
+@media (prefers-reduced-motion: reduce) {
+  .mux-drawer, .mux-overlay, .mux-toast, .mux-fab {
+    transition: none !important;
+  }
+}

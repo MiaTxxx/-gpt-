@@ -1,0 +1,24 @@
+{
+  "name": "Txxx的公益站",
+  "short_name": "Txxx公益站",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "background_color": "#ffffff",
+  "theme_color": "#863bff",
+  "description": "Txxx 的公益站：免费 AI 生图与公开提示词借鉴。",
+  "icons": [
+    { "src": "/favicon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "新建生图", "short_name": "生图", "url": "/workspace/generate", "icons": [{ "src": "/favicon-192.png", "sizes": "192x192" }] },
+    { "name": "图片管理", "short_name": "图管", "url": "/workspace/images", "icons": [{ "src": "/favicon-192.png", "sizes": "192x192" }] },
+    { "name": "提示词借鉴", "short_name": "画廊", "url": "/workspace/gallery", "icons": [{ "src": "/favicon-192.png", "sizes": "192x192" }] }
+  ]
+}
